@@ -170,8 +170,9 @@ const dotaLoop = async id => {
   if (!savedGames) {
     // If storage doesn't exist, set the recent games as storage
     // and wait for next iteration
+    console.log('Saving recent games to storage')
     await storage.setItem('recentMatches', games)
-    return
+    return dotaLoop(id)
   }
 
   // Compair all recent games to see if matchID matches the stored games

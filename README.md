@@ -13,10 +13,10 @@ DISCORD_ID=
 DISCORD_TOKEN=
 ```
 
-To create DB delete the .node-persist folder then:
-```
+To run:
+```cli
 yarn
 node index.js
 ```
 
-Enjoy
+Enjoy, I guess ¯\_(ツ)_/¯
