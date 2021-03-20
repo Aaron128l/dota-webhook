@@ -1,0 +1,21 @@
+{
+  "name": "dota-webhook",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "pm2 start app.js --env production --name dota",
+    "restart": "pm2 restart dota && pm2 reset dota"
+  },
+  "author": "Aaron L. <aloken128@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "discord.js": "^12.5.1",
+    "dotenv": "^8.2.0",
+    "got": "^11.8.2",
+    "node-persist": "^3.1.0",
+    "node-schedule": "^2.0.0"
+  },
+  "devDependencies": {
+    "prettier": "2.2.1"
+  }
+}
