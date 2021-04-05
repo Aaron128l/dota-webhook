@@ -1,4 +1,5 @@
 ## Dota 2 Webhook
+Create a .env in the project directory and apply to example below.
 
 .env example
 ```
@@ -19,4 +20,4 @@ yarn
 node index.js
 ```
 
-Enjoy, I guess ¯\_(ツ)_/¯
+Enjoy, I guess ¯\\_(ツ)_/¯

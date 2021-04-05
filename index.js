@@ -5,6 +5,8 @@ const constrants = require('./constrants')
 const Discord = require('discord.js')
 const schedule = require('node-schedule')
 const hook = new Discord.WebhookClient(process.env.DISCORD_ID, process.env.DISCORD_TOKEN)
+const { DateTime, Duration, Settings } = require('luxon')
+Settings.defaultZoneName= 'America/Denver'
 
 const TEAMS = {
   RADIANT: 0,
@@ -116,6 +118,9 @@ const sendDiscordWebhook = ({
         thumbnail: {
           url: `https://api.opendota.com${hero.img}`
         },
+        footer: {
+          text: DateTime.now().toLocaleString(DateTime.DATETIME_FULL)
+        },
         description: `**${Win ? 'Win' : 'Loss'}** - __**${Team === TEAMS.RADIANT ? `${radiant_score} - ${dire_score}` : `${dire_score} - ${radiant_score}`}**__`,
         fields: [
           {
@@ -141,8 +146,8 @@ const sendDiscordWebhook = ({
           {
             name: 'Match Details',
             value:
-              `Duration: ${new Date(duration * 1000).toISOString().substr(11, 8)}\n` +
-              `Start: ${new Date(start_time * 1000).toDateString()}\n` +
+              `Duration: ${Duration.fromMillis(duration * 1000).toFormat('hh:mm:ss')}\n` +
+              `Start: ${DateTime.fromSeconds(start_time).toLocaleString(DateTime.TIME_SIMPLE)}\n` +
               `Game Mode: ${game_mode}\n` +
               `Lobby Type: ${lobby_type}\n` +
               `Party Size: ${party_size}`
@@ -172,7 +177,7 @@ const dotaLoop = async id => {
     // and wait for next iteration
     console.log('Saving recent games to storage')
     await storage.setItem('recentMatches', games)
-    return dotaLoop(id)
+    savedGames = games
   }
 
   // Compair all recent games to see if matchID matches the stored games
@@ -222,7 +227,7 @@ const dotaLoop = async id => {
     })
   }
   // remember to save new games....
-  await storage.setItem('recentMatches', games)
+  // await storage.setItem('recentMatches', games)
   console.log('Completed loop. Games saved.')
 }
 
