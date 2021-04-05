@@ -227,7 +227,7 @@ const dotaLoop = async id => {
     })
   }
   // remember to save new games....
-  // await storage.setItem('recentMatches', games)
+  await storage.setItem('recentMatches', games)
   console.log('Completed loop. Games saved.')
 }
 
