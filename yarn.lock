@@ -114,6 +114,11 @@ combined-stream@^1.0.8:
   dependencies:
     delayed-stream "~1.0.0"
 
+common-tags@^1.8.0:
+  version "1.8.0"
+  resolved "https://registry.yarnpkg.com/common-tags/-/common-tags-1.8.0.tgz#8e3153e542d4a39e9b10554434afaaf98956a937"
+  integrity sha512-6P6g0uetGpW/sdyUy/iQQCbFF0kWVMSIVSyYz7Zgjcgh8mgw8PQzDNZeyZ5DQ2gM7LBoZPHmnjz8rUthkBG5tw==
+
 cron-parser@^3.1.0:
   version "3.3.0"
   resolved "https://registry.yarnpkg.com/cron-parser/-/cron-parser-3.3.0.tgz#7d3a801e87f1691e3b5155f9dd107cb07bf39abc"
