@@ -2,8 +2,8 @@ require('dotenv').config()
 const got = require('got')
 const storage = require('node-persist')
 const constrants = require('./constrants')
-const Discord = require('discord.js')
 const schedule = require('node-schedule')
+const Discord = require('discord.js')
 const client = new Discord.Client()
 const hook = new Discord.WebhookClient(process.env.DISCORD_ID, process.env.DISCORD_TOKEN)
 const common_tags = require('common-tags')
@@ -209,10 +209,7 @@ const dotaLoop = async id => {
     const { hero_id, player_slot, radiant_win } = game
     const hero = heros.find(x => x.id === hero_id)
     const Team = player_slot >= 0 && player_slot <= 127 ? TEAMS.RADIANT : TEAMS.DIRE
-    const Win =
-      (Team === TEAMS.RADIANT && radiant_win) || (Team === TEAMS.DIRE && !radiant_win)
-        ? true
-        : false
+    const Win = (Team === TEAMS.RADIANT && radiant_win) || (Team === TEAMS.DIRE && !radiant_win)
 
     const game_mode = constrants.game_mode[game.game_mode].name
     const lobby_type = constrants.lobby_type[game.lobby_type].name
