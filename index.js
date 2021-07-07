@@ -1,5 +1,7 @@
 #!/usr/bin/env node
-require('dotenv').config()
+const dotenv =  require('dotenv')
+dotenv.config({ path: __dirname + '/.env' });
+
 const constrants = require('./constrants')
 
 const Discord = require('discord.js')
