@@ -12,12 +12,19 @@ STEAMID=
 # Where 443324892966754337 is the ID, and SgV-_afkYQ_t2j4fxWAubAvAOaBKWpASN94MSAtLZ66Edg4hSxJA4ggV4pe_-zhAuLUh is the TOKEN
 DISCORD_ID=
 DISCORD_TOKEN=
+GUILD_ID=
 ```
 
 To run:
 ```cli
 yarn
-node index.js
+
+# setup as crontab
+* * * * * /usr/local/bin/node /home/aaron/dota-webhook/index.js
+
+# Discord Slash Commands
+node slash.js
+node dota-discord.js
 ```
 
-Enjoy, I guess ¯\\_(ツ)_/¯
+Enjoy, I guess ¯\\_(ツ)\_/¯

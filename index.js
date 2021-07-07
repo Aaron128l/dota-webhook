@@ -3,7 +3,7 @@ require('dotenv').config()
 const constrants = require('./constrants')
 
 const Discord = require('discord.js')
-let hook;
+let hook
 
 // Stuff and Things
 const got = require('got')
@@ -41,7 +41,7 @@ const fetchSteamIds = async urlname => {
   }
 }
 
-const API_ENDPOINT = (id) => ({
+const API_ENDPOINT = id => ({
   players: `players/${id}`,
   matches: `matches/${id}`,
   recentMatches: `players/${id}/recentMatches`,
@@ -144,7 +144,7 @@ const sendDiscordWebhook = ({
 
 const dotaLoop = async id => {
   // Get Recent Games
-  const [games, error] = await fetchAPI('recentMatches', id);
+  const [games, error] = await fetchAPI('recentMatches', id)
   if (error) throw new Error(`Error Fetching recentMatches: ${error}`)
 
   if (!games) return console.log('No games found...')
@@ -181,7 +181,7 @@ const dotaLoop = async id => {
     const [{ dire_score, radiant_score }, error4] = await fetchAPI('matches', game.match_id)
     if (error4) {
       console.error(`Error fetching match ${game.match_id}`)
-      continue;
+      continue
     }
     const { hero_id, player_slot, radiant_win } = game
     const hero = heros.find(x => x.id === hero_id)

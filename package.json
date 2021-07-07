@@ -3,10 +3,10 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "start": "pm2 start index.js --env production --name dota",
+    "start": "pm2 start dota-discord.js --env production --name dota",
     "restart": "pm2 restart dota && pm2 reset dota"
   },
-  "author": "Aaron L. <aloken128@gmail.com>",
+  "author": "Aaron L.",
   "license": "MIT",
   "dependencies": {
     "common-tags": "^1.8.0",
