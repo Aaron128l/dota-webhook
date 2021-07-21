@@ -1,6 +1,5 @@
-#!/usr/bin/env node
-const dotenv =  require('dotenv')
-dotenv.config({ path: __dirname + '/.env' });
+const dot = require('dotenv').config()
+if (dot.error) throw dot.error
 
 const constrants = require('./constrants')
 
