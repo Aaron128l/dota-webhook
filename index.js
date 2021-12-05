@@ -1,15 +1,12 @@
 const dot = require('dotenv').config()
 if (dot.error) throw dot.error
 
-const constrants = require('./constrants')
-
 const Discord = require('discord.js')
 let hook
 
 // Stuff and Things
 const got = require('got')
 const storage = require('node-persist')
-// const common_tags = require('common-tags')
 
 // Luxon
 const { DateTime, Duration, Settings } = require('luxon')
@@ -27,6 +24,7 @@ const OpenDotaAPI = got.extend({
   responseType: 'json'
 })
 
+// Unused at this time...
 const fetchSteamIds = async urlname => {
   try {
     const response = await got(`http://api.steampowered.com/ISteamUser/ResolveVanityURL/v0001/`, {
@@ -74,9 +72,6 @@ const sendDiscordWebhook = ({
   tower_damage,
   hero_healing,
   last_hits,
-  party_size,
-  game_mode,
-  lobby_type,
   duration,
   start_time,
   dire_score,
@@ -84,7 +79,7 @@ const sendDiscordWebhook = ({
   Team
 }) => {
   const payload = {
-    username: `Dota 2 Tracker (v3?)`,
+    username: `Dota Tracker (v3)`,
     // avatarURL: 'https://avatarfiles.alphacoders.com/372/37238.png',
     embeds: [
       {
@@ -93,6 +88,7 @@ const sendDiscordWebhook = ({
           url: `https://www.opendota.com/players/${profile.profile.account_id}`,
           icon_url: profile.profile.avatar
         },
+        color: Win ? '0x00FF00' : '0xFF0000',
         title: `Match #${match_id}`,
         url: `https://www.opendota.com/matches/${match_id}`,
         thumbnail: {
@@ -110,20 +106,18 @@ const sendDiscordWebhook = ({
           {
             name: 'Hero',
             value:
-              `Played as: ${hero.localized_name}\n` +
-              `Kills: ${kills}\n` +
-              `Deaths: ${deaths}\n` +
-              `Assists: ${assists}\n\n` +
-              `XP per minute: ${xp_per_min}\n` +
-              `Gold per minute: ${gold_per_min}`,
+              `Hero: ${hero.localized_name}\n` +
+              `K/D/A: ${kills}/${deaths}/${assists}\n` +
+              `XPM: ${xp_per_min}\n` +
+              `GPM: ${gold_per_min}`,
             inline: true
           },
           {
             name: 'Damage',
             value:
-              `Hero Damage: ${hero_damage}\n` +
-              `Tower Damage: ${tower_damage}\n` +
-              `Hero Healing: ${hero_healing}\n` +
+              `HD: ${hero_damage}\n` +
+              `TD: ${tower_damage}\n` +
+              `HH: ${hero_healing}\n` +
               `Last hits: ${last_hits}`,
             inline: true
           },
@@ -131,10 +125,7 @@ const sendDiscordWebhook = ({
             name: 'Match Details',
             value:
               `Duration: ${Duration.fromMillis(duration * 1000).toFormat('hh:mm:ss')}\n` +
-              `Start: ${DateTime.fromSeconds(start_time).toLocaleString(DateTime.TIME_SIMPLE)}\n` +
-              `Game Mode: ${game_mode}\n` +
-              `Lobby Type: ${lobby_type}\n` +
-              `Party Size: ${party_size}`
+              `Start: ${DateTime.fromSeconds(start_time).toLocaleString(DateTime.TIME_SIMPLE)}`
           }
         ]
       }
@@ -178,7 +169,7 @@ const dotaLoop = async id => {
   const [profile, error3] = await fetchAPI('players', id)
   if (error2 || error3) return console.log('Error attempting to fetch heroes/players')
 
-  for await (game of New_Games) {
+  for await (const game of New_Games) {
     const [{ dire_score, radiant_score }, error4] = await fetchAPI('matches', game.match_id)
     if (error4) {
       console.error(`Error fetching match ${game.match_id}`)
@@ -189,9 +180,6 @@ const dotaLoop = async id => {
     const Team = player_slot >= 0 && player_slot <= 127 ? TEAMS.RADIANT : TEAMS.DIRE
     const Win = (Team === TEAMS.RADIANT && radiant_win) || (Team === TEAMS.DIRE && !radiant_win)
 
-    const game_mode = constrants.game_mode[game.game_mode].name
-    const lobby_type = constrants.lobby_type[game.lobby_type].name
-
     console.log(`Post ${game.match_id}`)
 
     sendDiscordWebhook({
@@ -200,8 +188,6 @@ const dotaLoop = async id => {
       profile,
       Team,
       Win,
-      game_mode,
-      lobby_type,
       dire_score,
       radiant_score
     })
@@ -215,7 +201,7 @@ const dotaLoop = async id => {
 const init = async () => {
   const id = convertTo32(process.env.STEAMID)
   try {
-    hook = new Discord.WebhookClient(process.env.DISCORD_ID, process.env.DISCORD_TOKEN)
+    hook = new Discord.WebhookClient({id: process.env.DISCORD_ID, token: process.env.DISCORD_TOKEN})
     await storage.init()
     await dotaLoop(id)
     hook.destroy()
