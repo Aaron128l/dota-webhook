@@ -196,9 +196,9 @@ const dotaLoop = async id => {
     if (maxLogs >= 50) {
       return
     } else {
-      maxLogs += 1
+      maxLogs++
     }
-    console.log(`No new games... Max Logs ${maxLogs} `)
+    console.log(`No new games... Max Logs ${maxLogs} - Logging will stop after 50 `)
     return
   } 
   /*
@@ -247,7 +247,6 @@ storage.init()
 
 const init = async () => {
   try {
-    console.log('starting')
     await dotaLoop(RealSteamId)
   } catch (error) {
     console.error('Error starting dotaLoop()')
@@ -255,8 +254,8 @@ const init = async () => {
   }
 }
 
+console.log('starting')
 init()
-
 const job = schedule.scheduleJob('* * * * *', () => {
   init()
 })
