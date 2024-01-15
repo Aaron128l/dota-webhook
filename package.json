@@ -1,26 +1,32 @@
 {
-  "name": "dota-webhook",
-  "version": "1.0.0",
-  "main": "index.js",
-  "scripts": {
-    "start": "pm2 start dota-discord.js --env production --name dota",
-    "restart": "pm2 restart dota && pm2 reset dota"
-  },
-  "author": "Aaron L.",
-  "license": "MIT",
-  "dependencies": {
-    "@discordjs/rest": "^0.1.0-canary.0",
-    "common-tags": "^1.8.0",
-    "dayjs": "^1.11.5",
-    "discord-api-types": "^0.25.2",
-    "discord.js": "^13.3.1",
-    "dotenv": "^8.2.0",
-    "got": "^11.8.2",
-    "luxon": "^1.26.0",
-    "node-persist": "^3.1.0",
-    "node-schedule": "^2.1.0"
-  },
-  "devDependencies": {
-    "prettier": "2.7.1"
-  }
+	"name": "dota-webhook",
+	"version": "1.0.0",
+	"author": "Aaron L.",
+	"type": "module",
+	"engines": {
+		"node": ">=18.11",
+		"pnpm": ">=7.27"
+	},
+	"scripts": {
+		"dev": "pnpm /dev:.*/",
+		"dev:build": "esbuild dev.ts ./src --bundle --outdir=dist --packages=external --platform=node --format=esm --sourcemap --watch",
+		"dev:run": "node --inspect --import ./dist/dev.js --watch dist/src",
+		"build": "esbuild index=./src --bundle --minify --outdir=dist --packages=external --platform=node --format=esm",
+		"start": "node dist"
+	},
+	"dependencies": {
+		"cron": "^3.1.6",
+		"debug": "^4.3.4",
+		"discord.js": "^14.14.1",
+		"esbuild": "^0.19.8",
+		"got": "^14.0.0",
+		"luxon": "^3.4.4",
+		"zod": "^3.22.4"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "^1.5.1",
+		"@types/debug": "^4.1.12",
+		"@types/luxon": "^3.4.0",
+		"@types/node": "^20.10.2"
+	}
 }
