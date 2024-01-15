@@ -2,6 +2,7 @@
 	"files": { "ignore": [".vscode/*", "dist/*", "node_modules/*", "README.md"] },
 	"javascript": {
 		"formatter": {
+			"indentStyle": "space",
 			"semicolons": "asNeeded"
 		}
 	},
