@@ -1,5 +1,6 @@
 import { CronJob } from "cron"
 import { EmbedBuilder, WebhookClient, bold, underscore } from "discord.js"
+import { HTTPError } from "got"
 import { DateTime as dt, Duration, Settings } from "luxon"
 import { z } from "zod"
 import { GameModeType, GameModes } from "./gamemodes.js"
@@ -139,12 +140,36 @@ function sendWebhook(
     ])
 
   DiscordWebhook.send({ username: "Dota Tracker (v4)", embeds: [embed] })
+  console.log(
+    `${dt.now().toLocaleString(dt.DATETIME_SHORT_WITH_SECONDS)}: New Match: ${
+      match.match_id
+    }`,
+  )
 }
 
 let lastRecordedMatch: RecentMatches | null = null
 async function EventLoop(): Promise<void> {
   // Determine New Games
-  const recentMatch = await latestRecentMatch(RealSteamId)
+  let recentMatch: RecentMatches
+  try {
+    recentMatch = await latestRecentMatch(RealSteamId)
+  } catch (err) {
+    if (err instanceof HTTPError) {
+      console.error(
+        `${dt
+          .now()
+          .toLocaleString(dt.DATETIME_SHORT_WITH_SECONDS)}:got HTTP error: ${
+          err.code
+        } ${err.response.statusCode} - ${err.request.requestUrl} - ${
+          err.response.body
+        }`,
+      )
+      return
+    }
+    console.error("Failed to get recentMatch from API")
+    return
+  }
+
   if (!lastRecordedMatch?.start_time) {
     console.log(
       `${dt
@@ -178,9 +203,20 @@ async function EventLoop(): Promise<void> {
     hero = await fetchHeroes(recentMatch.hero_id)
     heroImg = await fetchHeroStatsImage(recentMatch.hero_id)
     profile = await fetchPlayerProfile(RealSteamId)
-  } catch (error) {
-    console.error("Error fetching data:", error)
-    // throw Error(`Error fetching data: ${error}`)
+  } catch (err) {
+    if (err instanceof HTTPError) {
+      console.error(
+        `${dt
+          .now()
+          .toLocaleString(dt.DATETIME_SHORT_WITH_SECONDS)}: got HTTP error: ${
+          err.code
+        } - ${err.response.statusCode} - ${err.request.requestUrl} - ${
+          err.response.body
+        }`,
+      )
+      return
+    }
+    console.error("Error fetching data:", err)
     return
   }
 

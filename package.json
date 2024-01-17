@@ -16,7 +16,6 @@
 	},
 	"dependencies": {
 		"cron": "^3.1.6",
-		"debug": "^4.3.4",
 		"discord.js": "^14.14.1",
 		"esbuild": "^0.19.8",
 		"got": "^14.0.0",
@@ -25,7 +24,6 @@
 	},
 	"devDependencies": {
 		"@biomejs/biome": "^1.5.1",
-		"@types/debug": "^4.1.12",
 		"@types/luxon": "^3.4.0",
 		"@types/node": "^20.10.2"
 	}

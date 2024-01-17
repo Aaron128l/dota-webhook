@@ -132,14 +132,8 @@ export async function fetchFromApi<T>(
       url = formatString(url, params.matchId.toString())
     }
   }
-
-  try {
-    const response = await got(url).json<T>()
-    return response as T
-  } catch (error) {
-    console.log(`Error fetching data from ${url}`, error)
-    throw Error(`Error fetching data from ${url} - ${error}`)
-  }
+  const response = await got(url).json<T>()
+  return response as T
 }
 
 export async function fetchHeroes(hero_id: Hero["id"]): Promise<Hero> | never {
