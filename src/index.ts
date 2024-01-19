@@ -103,9 +103,7 @@ function sendWebhook(
     .setURL(`https://www.opendota.com/matches/${match_id}`)
     .setThumbnail(`https://cdn.cloudflare.steamstatic.com${heroImg}`)
     .setFooter({
-      text: dt
-        .fromSeconds(start_time)
-        .toLocaleString(dt.DATETIME_MED_WITH_WEEKDAY),
+      text: dt.now().toLocaleString(dt.DATETIME_MED_WITH_WEEKDAY),
     })
     .setDescription(
       `${bold(didWin ? "Win" : "Loss")} - ${underscore(bold(Scoreboard))}`,
@@ -193,6 +191,8 @@ async function EventLoop(): Promise<void> {
   }
 
   // New Match
+  lastRecordedMatch = recentMatch
+
   let matchDetails = undefined
   let hero = undefined
   let heroImg = undefined
