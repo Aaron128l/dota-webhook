@@ -15,7 +15,6 @@
 		"start": "node dist"
 	},
 	"dependencies": {
-		"cron": "^3.1.6",
 		"discord.js": "^14.14.1",
 		"esbuild": "^0.19.8",
 		"got": "^14.0.0",

@@ -37,7 +37,7 @@ Template from [dayblox/node-ts](https://github.com/dayblox/node-ts).
       DISCORD_ID: "424282193671420215",
       DISCORD_TOKEN: "ab7jgaE2c_9Utu2-RDxGM0DDI39RVxv329Oq36k",
       // Optional Poll Time - Every 5 minutes
-      CRON_TIME: "*/5 * * * *",
+      POLL_TIME_SECONDS: 300,
     };
     ```
 
@@ -52,7 +52,7 @@ Template from [dayblox/node-ts](https://github.com/dayblox/node-ts).
       STEAMID: z.string(),
       DISCORD_ID: z.string(),
       DISCORD_TOKEN: z.string(),
-      CRON_TIME: z.string().optional(),
+      POLL_TIME_SECONDS: z.coerce.number().optional(),
     });
     ```
 

@@ -1,4 +1,3 @@
-import { CronJob } from "cron"
 import { EmbedBuilder, WebhookClient, bold, underscore } from "discord.js"
 import { HTTPError } from "got"
 import { DateTime as dt, Duration, Settings } from "luxon"
@@ -22,7 +21,7 @@ const envSchema = z.object({
   STEAMID: z.string(),
   DISCORD_ID: z.string(),
   DISCORD_TOKEN: z.string(),
-  CRON_TIME: z.string().optional(),
+  POLL_TIME_SECONDS: z.coerce.number().optional(),
 })
 
 Settings.defaultZone = "America/Denver"
@@ -31,7 +30,7 @@ const {
   STEAMID,
   DISCORD_ID,
   DISCORD_TOKEN,
-  CRON_TIME = "*/5 * * * *",
+  POLL_TIME_SECONDS = 5 * 60,
 } = envSchema.parse(process.env)
 
 const RealSteamId: PlayerParams["steamId"] = (
@@ -56,7 +55,7 @@ function sendWebhook(
   profile: ProfileDetails,
 ): void {
   // Determine Team
-  const { match_id, start_time, player_slot, radiant_win } = match
+  const { match_id, player_slot, radiant_win } = match
   const Team =
     player_slot >= 0 && player_slot <= 127 ? Teams.Radiant : Teams.Dire
   const didWin =
@@ -224,14 +223,9 @@ async function EventLoop(): Promise<void> {
 }
 
 // Auto Start Cron Job Every Minute
-const timer = CronJob.from({
-  cronTime: CRON_TIME,
-  onTick: () => {
-    EventLoop()
-  },
-  start: false,
-  timeZone: "America/Denver",
-})
+setInterval(() => {
+  EventLoop()
+}, POLL_TIME_SECONDS * 1000)
 
 console.log("Program Startup - Fetching Recent Match IDs")
 lastRecordedMatch = await latestRecentMatch(RealSteamId)
@@ -241,5 +235,4 @@ console.log(
     .toLocaleString(dt.DATETIME_MED)} Dota matches.`,
 )
 
-console.log("Starting Loop Timer - ", CRON_TIME)
-timer.start()
+console.log(`Starting Loop Timer - ${POLL_TIME_SECONDS} seconds`)
