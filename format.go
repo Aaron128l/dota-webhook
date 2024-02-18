@@ -7,10 +7,6 @@ import (
 	"time"
 )
 
-func logger(s string) {
-	fmt.Printf("%s - %s\n", getTimeNowWithTZ().Format("01/02/2006 03:04:05PM-07"), s)
-}
-
 func formatDuration(seconds int) string {
 	hours := seconds / 3600
 	minutes := (seconds % 3600) / 60

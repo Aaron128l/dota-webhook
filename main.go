@@ -18,56 +18,57 @@ import (
 var EnvSteamID string
 var EnvDiscordURL string
 var EnvPollTime int
+var logger = log.New(os.Stdout, "- ", log.LstdFlags|log.Lmsgprefix)
 
 func main() {
 	err := godotenv.Load()
 	if err != nil {
-		fmt.Println("No .env file found. Skipping...")
+		logger.Println("No .env file found. Skipping...")
 	}
 
 	if env, exists := os.LookupEnv("STEAM_ID"); exists {
 		EnvSteamID = env
 	} else {
-		log.Fatal("Missing STEAM_ID env variable. Quitting...")
+		logger.Fatal("Missing STEAM_ID env variable. Quitting...")
 	}
 
 	if env, exists := os.LookupEnv("DISCORD_URL"); exists {
 		EnvDiscordURL = env
 	} else {
-		log.Fatal("Missing DISCORD_URL env variable. Quitting...")
+		logger.Fatal("Missing DISCORD_URL env variable. Quitting...")
 	}
 
 	if env, exists := os.LookupEnv("POLL_TIME"); exists {
 		if intValue, err := strconv.Atoi(env); err == nil {
 			EnvPollTime = intValue
 		} else {
-			log.Fatal("POLL_TIME failed to convert to int. Quitting...")
+			logger.Fatal("POLL_TIME failed to convert to int. Quitting...")
 		}
 	} else {
-		log.Fatal("Missing POLL_TIME env variable. Quitting...")
+		logger.Fatal("Missing POLL_TIME env variable. Quitting...")
 	}
 
 	SteamID, err := convertSteam64to32(EnvSteamID)
 	if err != nil {
-		log.Fatalf("Unable to get Steam ID from %s. Quitting...", EnvSteamID)
+		logger.Fatalf("Unable to get Steam ID from %s. Quitting...", EnvSteamID)
 	}
 
-	fmt.Println("Aaron's Dota II Webhook")
-	fmt.Println("Fetching Inital Match...")
+	logger.Println("Aaron's Dota II Webhook")
+	logger.Println("Fetching Inital Match...")
 
 	recentMatches, err := fetchAPIRecentMatches(SteamID)
 	if err != nil || len(recentMatches) < 1 { // Should always be one
-		log.Fatal("Error fetching first recent game. Exiting")
+		logger.Fatal("Error fetching first recent game. Exiting")
 	}
 	lastMatch := recentMatches[0]
 
-	logger(fmt.Sprintf("Starting Event Loop - %d seconds", EnvPollTime))
+	logger.Printf("Starting Event Loop - %d seconds\n", EnvPollTime)
 	for {
 		time.Sleep(time.Duration(EnvPollTime) * time.Second)
 
 		recentMatches, err := fetchAPIRecentMatches(SteamID)
 		if err != nil || len(recentMatches) < 1 { // Should always be one
-			logger("Unable to fetch recentMatch... skipping")
+			logger.Println("Unable to fetch recentMatch... skipping")
 			continue
 		}
 
@@ -78,42 +79,42 @@ func main() {
 
 		recentMatch := recentMatches[0]
 		if recentMatch.StartTime <= lastMatch.StartTime {
-			logger("Not a new match... Ending eventloop...")
+			logger.Println("Not a new match... Ending eventloop...")
 			continue
 		}
 		// Set new match
 		lastMatch = recentMatch
-		logger(fmt.Sprintf("New match %d", recentMatch.MatchID))
+		logger.Printf("New match %d", recentMatch.MatchID)
 
 		// Fetch stuff
 		matchDetail, err := fetchAPIMatchDetails(recentMatch.MatchID)
 		if err != nil {
-			fmt.Println(err)
+			logger.Println(err)
 			continue
 		}
 
 		profile, err := fetchAPIPlayer(SteamID)
 		if err != nil {
-			fmt.Println(err)
+			logger.Println(err)
 			continue
 		}
 
 		hero, err := fetchAPIHeroArray(recentMatch.HeroID)
 		if err != nil {
-			fmt.Println(err)
+			logger.Println(err)
 			continue
 		}
 
 		heroStats, err := fetchAPIHeroStatsArray()
 		if err != nil {
-			fmt.Println(err)
+			logger.Println(err)
 			continue
 		}
 
 		// Fetch Exact Hero
 		heroImg, found := findHeroImgById(heroStats, recentMatch.HeroID)
 		if !found {
-			fmt.Println("Hero image not found")
+			logger.Println("Hero image not found")
 			continue
 		}
 
@@ -286,9 +287,9 @@ func sendWebhook(match RecentMatchGames, matchDetail MatchDetails, hero Hero, he
 	json.NewEncoder(payloadBuf).Encode(webhook)
 	resp, err := http.Post(EnvDiscordURL, "application/json", payloadBuf)
 	if err != nil {
-		fmt.Println("Unable to send Webhook:", err)
+		logger.Println("Unable to send Webhook:", err)
 	} else {
-		logger("Webhook Successfully Sent")
+		logger.Println("Webhook Successfully Sent")
 	}
 
 	defer resp.Body.Close()

@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
 	"math/big"
 	"net/http"
 )
@@ -83,8 +82,8 @@ func convertSteam64to32(steam64 string) (string, error) {
 	steamIDBigInt := new(big.Int)
 	steamIDBigInt, ok := steamIDBigInt.SetString(steam64, 10) // base 10
 	if !ok {
-		fmt.Println("Failed to parse steam64")
-		return "", errors.New("Failed to parse steam64")
+		logger.Println("Failed to parse steam64")
+		return "", errors.New("failed to parse steam64")
 	}
 
 	offset := new(big.Int)
@@ -98,21 +97,21 @@ func convertSteam64to32(steam64 string) (string, error) {
 func fetchJSON(url string, target interface{}) error {
 	resp, err := http.Get(url)
 	if err != nil {
-		log.Println(err)
-		return errors.New("Failed to fetch Data")
+		logger.Println(err)
+		return errors.New("failed to fetch Data")
 	}
 	defer resp.Body.Close()
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		log.Println(err)
-		return errors.New("Failed to read body")
+		logger.Println(err)
+		return errors.New("failed to read body")
 	}
 
 	if err := json.Unmarshal(body, target); err != nil {
-		log.Println(err)
-		log.Println(body)
-		return errors.New("Failed to unmarshal body")
+		logger.Println(err)
+		logger.Println(body)
+		return errors.New("failed to unmarshal body")
 	}
 
 	return nil
@@ -144,7 +143,7 @@ func fetchAPIHeroArray(hero_id int) (Hero, error) {
 		}
 	}
 
-	return Hero{}, errors.New("Failed to find Hero via id")
+	return Hero{}, errors.New("failed to find Hero via id")
 }
 
 func fetchAPIHeroStatsArray() ([]HeroStat, error) {
