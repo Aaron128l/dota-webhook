@@ -15,28 +15,6 @@ import (
 	"github.com/joho/godotenv"
 )
 
-func loadEnvVariableString(key, defaultValue string) string {
-	if value, exists := os.LookupEnv(key); exists {
-		fmt.Println("Loaded in ", value, " from ", key)
-		return value
-	}
-	fmt.Println("Loaded default value: ", defaultValue)
-	return defaultValue
-}
-
-func loadEnvVariableInt(key string, defaultValue int) int {
-	if value, exists := os.LookupEnv(key); exists {
-		if intValue, err := strconv.Atoi(value); err == nil {
-			fmt.Println("Loaded in ", intValue, " from ", key)
-			return intValue
-		}
-	}
-
-	fmt.Println("Loaded default value: ", defaultValue)
-
-	return defaultValue
-}
-
 var EnvSteamID string
 var EnvDiscordURL string
 var EnvPollTime int
@@ -139,7 +117,7 @@ func main() {
 			continue
 		}
 
-		sendWebhook(recentMatch, matchDetail, hero, heroImg, profile)
+		go sendWebhook(recentMatch, matchDetail, hero, heroImg, profile)
 	}
 
 }

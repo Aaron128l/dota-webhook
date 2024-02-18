@@ -8,7 +8,7 @@ import (
 )
 
 func logger(s string) {
-	fmt.Printf("%s - %s\n", getTimeNowWithTZ().Format("01/02/2006 03:04:05PM -07"), s)
+	fmt.Printf("%s - %s\n", getTimeNowWithTZ().Format("01/02/2006 03:04:05PM-07"), s)
 }
 
 func formatDuration(seconds int) string {
@@ -21,7 +21,13 @@ func formatDuration(seconds int) string {
 func formatTimestamp(seconds int64) string {
 	t := time.Unix(seconds, 0)
 	layout := "Jan 2, 2006, 3:04 PM"
-	return t.Format(layout)
+
+	loc, err := time.LoadLocation("America/Denver")
+	if err != nil {
+		return t.Format(layout)
+	}
+
+	return t.UTC().In(loc).Format(layout)
 }
 
 func getTimeNowWithTZ() time.Time {
