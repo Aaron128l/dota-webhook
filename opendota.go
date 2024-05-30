@@ -7,6 +7,7 @@ import (
 	"io"
 	"math/big"
 	"net/http"
+	"strconv"
 )
 
 type Player struct {
@@ -101,6 +102,30 @@ func fetchJSON(url string, target interface{}) error {
 		return errors.New("failed to fetch Data")
 	}
 	defer resp.Body.Close()
+
+	// Check rate limit
+	rateLimitRemainingStr := resp.Header.Get("x-rate-limit-remaining-day")
+	if rateLimitRemainingStr != "" {
+		rateLimitRemaining, err := strconv.Atoi(rateLimitRemainingStr)
+		if err != nil {
+			logger.Printf("Error parsing rate limit: %v\n", err)
+		} else {
+			if rateLimitRemaining%200 == 0 {
+				logger.Printf("Rate limit remaining for the day: %d\n", rateLimitRemaining)
+			}
+			if rateLimitRemaining <= 0 {
+				logger.Printf("rate limit exceeded for day: %d", rateLimitRemaining)
+			}
+		}
+	}
+
+	// Check for HTTP errors
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body) // Read the body to include it in the error message if needed
+		logger.Printf("HTTP error: %s\n", resp.Status)
+		logger.Printf("Response body: %s\n", string(body))
+		return fmt.Errorf("HTTP error: %s", resp.Status)
+	}
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
