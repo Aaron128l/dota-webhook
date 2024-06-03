@@ -81,7 +81,7 @@ func main() {
 		})
 
 		recentMatch := recentMatches[0]
-		if recentMatch.StartTime <= lastMatch.StartTime && false {
+		if recentMatch.StartTime <= lastMatch.StartTime {
 			logger.Println("Not a new match... Ending eventloop...")
 			continue
 		}
@@ -221,7 +221,7 @@ func sendDiscordNotification(match RecentMatchGames, matchDetail MatchDetails, h
 				URL:         fmt.Sprintf("https://www.opendota.com/players/%d", profile.AccountID),
 				Description: descriptionText,
 				Footer: EmbedFooter{
-					// Text: getTimeNowWithTZ().Format("Mon, Jan 2, 2006, 3:04 PM") + " " + GetLatestPatch().Name + " - Now w/ Facets ❤️",
+					// Text: getTimeNowWithTZ().Format("Mon, Jan 2, 2006, 3:04 PM"),
 					Text: "Dota v" + GetLatestPatch().Name + " - Now with Facets ❤️",
 				},
 				Author: EmbedAuthor{
