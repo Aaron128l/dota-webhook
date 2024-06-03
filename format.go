@@ -26,13 +26,13 @@ func formatTimestamp(seconds int64) string {
 	return t.UTC().In(loc).Format(layout)
 }
 
-func getTimeNowWithTZ() time.Time {
-	loc, err := time.LoadLocation("America/Denver")
-	if err != nil {
-		return time.Now().UTC()
-	}
-	return time.Now().UTC().In(loc)
-}
+// func getTimeNowWithTZ() time.Time {
+// 	loc, err := time.LoadLocation("America/Denver")
+// 	if err != nil {
+// 		return time.Now().UTC()
+// 	}
+// 	return time.Now().UTC().In(loc)
+// }
 
 func toTitleCase(s string) string {
 	gamemodeRegex := regexp.MustCompile(`^game_mode_(\w+)$`)
@@ -52,4 +52,13 @@ func toTitleCase(s string) string {
 		// Convert the match (which will be the first letter of a word) to uppercase
 		return strings.ToUpper(t)
 	})
+}
+
+func formatWithSuffix(n int) string {
+	if n >= 1000 && n < 1000000 {
+		return fmt.Sprintf("%.1fk", float64(n)/1000)
+	} else if n >= 1000000 {
+		return fmt.Sprintf("%.1fM", float64(n)/1000000)
+	}
+	return fmt.Sprintf("%d", n)
 }

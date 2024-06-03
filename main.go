@@ -63,9 +63,12 @@ func main() {
 	lastMatch := recentMatches[0]
 
 	logger.Printf("Starting Event Loop - %d seconds\n", EnvPollTime)
-	for {
-		time.Sleep(time.Duration(EnvPollTime) * time.Second)
 
+	// Loop every EnvPollTime * second
+	ticker := time.NewTicker(time.Duration(EnvPollTime) * time.Second)
+	defer ticker.Stop()
+
+	for range ticker.C {
 		recentMatches, err := fetchAPIRecentMatches(SteamID)
 		if err != nil || len(recentMatches) < 1 { // Should always be one
 			logger.Println("Unable to fetch recentMatch... skipping")
@@ -78,7 +81,7 @@ func main() {
 		})
 
 		recentMatch := recentMatches[0]
-		if recentMatch.StartTime <= lastMatch.StartTime {
+		if recentMatch.StartTime <= lastMatch.StartTime && false {
 			logger.Println("Not a new match... Ending eventloop...")
 			continue
 		}
@@ -99,26 +102,13 @@ func main() {
 			continue
 		}
 
-		hero, err := fetchAPIHeroArray(recentMatch.HeroID)
-		if err != nil {
-			logger.Println(err)
-			continue
-		}
-
-		heroStats, err := fetchAPIHeroStatsArray()
-		if err != nil {
-			logger.Println(err)
-			continue
-		}
-
-		// Fetch Exact Hero
-		heroImg, found := findHeroImgById(heroStats, recentMatch.HeroID)
+		hero, found := GetHeroById(recentMatch.HeroID)
 		if !found {
-			logger.Println("Hero image not found")
+			logger.Println(err)
 			continue
 		}
 
-		go sendWebhook(recentMatch, matchDetail, hero, heroImg, profile)
+		sendDiscordNotification(recentMatch, matchDetail, hero, profile)
 	}
 
 }
@@ -166,7 +156,7 @@ const (
 	Dire
 )
 
-func sendWebhook(match RecentMatchGames, matchDetail MatchDetails, hero Hero, heroImg string, profile Profile) {
+func sendDiscordNotification(match RecentMatchGames, matchDetail MatchDetails, hero Hero, profile Profile) {
 	var Team int
 	if match.PlayerSlot >= 0 && match.PlayerSlot <= 127 {
 		Team = Radiant
@@ -207,22 +197,23 @@ func sendWebhook(match RecentMatchGames, matchDetail MatchDetails, hero Hero, he
 		avatar = "https://pbs.twimg.com/profile_images/1456045731018588162/9XVAIpwZ_400x400.jpg"
 	}
 
-	var GameMode string
-	for _, game := range gameModes {
-		if game.ID == match.GameMode {
-			GameMode = game.Name
-			break
-		}
+	var gamemode string
+	if gm, found := GetGameModeById(match.GameMode); found {
+		gamemode = toTitleCase(gm.Name)
+	} else {
+		gamemode = "Unknown"
 	}
 
-	if GameMode == "" {
-		GameMode = "Unknown"
+	var facetTitle string
+	if fc, found := GetFacetByHeroAndVariant(hero.ID, match.HeroVariant); found {
+		facetTitle = fc.Title
+	} else {
+		facetTitle = "Unknown"
 	}
-	GameMode = toTitleCase(GameMode)
 
 	// Could be a own function...
 	webhook := DiscordWebhook{
-		Username: "Dota Tracker (v4)",
+		Username: "Dota Tracker (v4.1)",
 		Embeds: []Embed{
 			{
 				Title:       fmt.Sprintf("Match #%d", match.MatchID),
@@ -230,7 +221,8 @@ func sendWebhook(match RecentMatchGames, matchDetail MatchDetails, hero Hero, he
 				URL:         fmt.Sprintf("https://www.opendota.com/players/%d", profile.AccountID),
 				Description: descriptionText,
 				Footer: EmbedFooter{
-					Text: getTimeNowWithTZ().Format("Mon, Jan 2, 2006, 3:04 PM"),
+					// Text: getTimeNowWithTZ().Format("Mon, Jan 2, 2006, 3:04 PM") + " " + GetLatestPatch().Name + " - Now w/ Facets ❤️",
+					Text: "Dota v" + GetLatestPatch().Name + " - Now with Facets ❤️",
 				},
 				Author: EmbedAuthor{
 					Name:    personaName,
@@ -238,42 +230,44 @@ func sendWebhook(match RecentMatchGames, matchDetail MatchDetails, hero Hero, he
 					URL:     fmt.Sprintf("https://www.opendota.com/matches/%d", match.MatchID),
 				},
 				Thumbnail: EmbedThumbnail{
-					URL: fmt.Sprintf("https://cdn.cloudflare.steamstatic.com%s", heroImg),
+					URL: fmt.Sprintf("https://cdn.cloudflare.steamstatic.com%s", hero.Img),
 				},
 				Fields: []EmbedField{
 					{
 						Name: "Stats",
 						Value: fmt.Sprintf(
 							"Hero: %s\n"+
+								"Facet: %s\n"+
 								"K/D/A: %d/%d/%d\n"+
 								"XPM: %d\n"+
-								"GPM: %d\n"+
-								"Game Mode: %s",
+								"GPM: %d\n",
 							hero.LocalizedName,
+							facetTitle,
 							match.Kills, match.Deaths, match.Assists,
 							match.XPPerMin,
-							match.GoldPerMin,
-							GameMode),
+							match.GoldPerMin),
 						Inline: true,
 					},
 					{
 						Name: "Performance",
 						Value: fmt.Sprintf(
-							"HD: %d\n"+
-								"TD: %d\n"+
-								"HH: %d\n"+
+							"Hero Damage: %s\n"+
+								"Tower Damage: %s\n"+
+								"Hero Healing: %s\n"+
 								"Last hits: %d",
-							match.HeroDamage,
-							match.TowerDamage,
-							match.HeroHealing,
+							formatWithSuffix(match.HeroDamage),
+							formatWithSuffix(match.TowerDamage),
+							formatWithSuffix(match.HeroHealing),
 							match.LastHits),
 						Inline: true,
 					},
 					{
 						Name: "Match Details",
 						Value: fmt.Sprintf(
-							"Duration: %s\n"+
-								"Start: %s",
+							"Game Mode: %s\n"+
+								"Duration: %s\n"+
+								"Start Time: %s",
+							gamemode,
 							formatDuration(match.Duration),
 							formatTimestamp(match.StartTime),
 						),
@@ -293,38 +287,4 @@ func sendWebhook(match RecentMatchGames, matchDetail MatchDetails, hero Hero, he
 	}
 
 	defer resp.Body.Close()
-}
-
-type GameMode struct {
-	ID       int
-	Name     string
-	Balanced bool
-}
-
-var gameModes = []GameMode{
-	{ID: 0, Name: "game_mode_unknown", Balanced: true},
-	{ID: 1, Name: "game_mode_all_pick", Balanced: true},
-	{ID: 2, Name: "game_mode_captains_mode", Balanced: true},
-	{ID: 3, Name: "game_mode_random_draft", Balanced: true},
-	{ID: 4, Name: "game_mode_single_draft", Balanced: true},
-	{ID: 5, Name: "game_mode_all_random", Balanced: true},
-	{ID: 6, Name: "game_mode_intro"},
-	{ID: 7, Name: "game_mode_diretide"},
-	{ID: 8, Name: "game_mode_reverse_captains_mode"},
-	{ID: 9, Name: "game_mode_greeviling"},
-	{ID: 10, Name: "game_mode_tutorial"},
-	{ID: 11, Name: "game_mode_mid_only"},
-	{ID: 12, Name: "game_mode_least_played", Balanced: true},
-	{ID: 13, Name: "game_mode_limited_heroes"},
-	{ID: 14, Name: "game_mode_compendium_matchmaking"},
-	{ID: 15, Name: "game_mode_custom"},
-	{ID: 16, Name: "game_mode_captains_draft", Balanced: true},
-	{ID: 17, Name: "game_mode_balanced_draft", Balanced: true},
-	{ID: 18, Name: "game_mode_ability_draft"},
-	{ID: 19, Name: "game_mode_event"},
-	{ID: 20, Name: "game_mode_all_random_death_match"},
-	{ID: 21, Name: "game_mode_1v1_mid"},
-	{ID: 22, Name: "game_mode_all_draft", Balanced: true},
-	{ID: 23, Name: "game_mode_turbo"},
-	{ID: 24, Name: "game_mode_mutation"},
 }

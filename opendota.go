@@ -28,22 +28,6 @@ type Profile struct {
 	Avatar      *string `json:"avatar"`
 }
 
-type Hero struct {
-	Name          string   `json:"name"`
-	ID            int      `json:"id"`
-	LocalizedName string   `json:"localized_name"`
-	PrimaryAttr   string   `json:"primary_attr"`
-	AttackType    string   `json:"attack_type"`
-	Roles         []string `json:"roles"`
-}
-
-type HeroStat struct {
-	Id            int    `json:"id"`
-	Name          string `json:"name"`
-	Localizedname string `json:"localized_name"`
-	Img           string `json:"img"`
-}
-
 // Match represents the structure of an individual match with all possible fields.
 type RecentMatchGames struct {
 	MatchID     int64 `json:"match_id"`
@@ -62,21 +46,13 @@ type RecentMatchGames struct {
 	TowerDamage int   `json:"tower_damage"`
 	HeroHealing int   `json:"hero_healing"`
 	LastHits    int   `json:"last_hits"`
+	HeroVariant int `json:"hero_variant"`
 }
 
 type MatchDetails struct {
 	MatchID      int64 `json:"match_id"`
 	DireScore    int16 `json:"dire_score"`
 	RadiantScore int16 `json:"radiant_score"`
-}
-
-func findHeroImgById(heroStats []HeroStat, heroId int) (string, bool) {
-	for _, hero := range heroStats {
-		if hero.Id == heroId {
-			return hero.Img, true // Hero found, return img and true
-		}
-	}
-	return "", false // Hero not found, return empty string and false
 }
 
 func convertSteam64to32(steam64 string) (string, error) {
@@ -151,35 +127,6 @@ func fetchAPIPlayer(SteamID string) (Profile, error) {
 	}
 
 	return player.Profile, nil
-}
-
-func fetchAPIHeroArray(hero_id int) (Hero, error) {
-	url := "https://api.opendota.com/api/heroes"
-
-	// Fetch Recent Match - TODO: Make a function
-	var heroes []Hero
-	if err := fetchJSON(url, &heroes); err != nil {
-		return Hero{}, err
-	}
-
-	for _, hero := range heroes {
-		if hero.ID == hero_id {
-			return hero, nil
-		}
-	}
-
-	return Hero{}, errors.New("failed to find Hero via id")
-}
-
-func fetchAPIHeroStatsArray() ([]HeroStat, error) {
-	url := "https://api.opendota.com/api/heroStats"
-	var heroes []HeroStat
-
-	if err := fetchJSON(url, &heroes); err != nil {
-		return []HeroStat{}, err
-	}
-
-	return heroes, nil
 }
 
 func fetchAPIMatchDetails(MatchID int64) (MatchDetails, error) {
