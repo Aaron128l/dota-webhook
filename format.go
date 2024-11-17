@@ -26,14 +26,6 @@ func formatTimestamp(seconds int64) string {
 	return t.UTC().In(loc).Format(layout)
 }
 
-// func getTimeNowWithTZ() time.Time {
-// 	loc, err := time.LoadLocation("America/Denver")
-// 	if err != nil {
-// 		return time.Now().UTC()
-// 	}
-// 	return time.Now().UTC().In(loc)
-// }
-
 func toTitleCase(s string) string {
 	gamemodeRegex := regexp.MustCompile(`^game_mode_(\w+)$`)
 	matches := gamemodeRegex.FindStringSubmatch(s)
